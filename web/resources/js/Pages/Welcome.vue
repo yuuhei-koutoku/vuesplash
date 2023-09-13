@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link } from "@inertiajs/vue3";
 import PhotoList from "./PhotoList.vue";
+import PhotoForm from "../Components/PhotoForm.vue";
 
 defineProps({
     canLogin: {
@@ -54,6 +55,7 @@ defineProps({
         </div>
         <div>
             <PhotoList />
+            <PhotoForm />
         </div>
     </div>
 </template>

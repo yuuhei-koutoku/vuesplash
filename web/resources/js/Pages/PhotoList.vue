@@ -25,7 +25,7 @@ const getPhoto = async () => {
             urls.value = data.map((item) => item);
         })
         .catch((error) => {
-            alert("画像の取得に失敗しました。");
+            alert("写真の取得に失敗しました。");
             console.log(error);
         })
         .finally(() => {});

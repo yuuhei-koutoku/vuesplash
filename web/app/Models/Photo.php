@@ -10,6 +10,12 @@ class Photo extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'filename',
+        'filepath',
+        'user_id'
+    ];
+
     public function getImageUrls()
     {
         // AWS S3 Clientのインスタンスを作成
@@ -41,5 +47,23 @@ class Photo extends Model
         }
 
         return $urls;
+    }
+
+    public function storePhoto($file, $userId)
+    {
+        // 拡張子付きでファイル名を取得する
+        $filenameWithExt = $file->getClientOriginalName();
+
+        // 写真を保存し、パスを取得する
+        $path = $file->storeAs('photos', $filenameWithExt, 's3');
+
+        // Photoインスタンスを生成する
+        $photo = self::create([
+            'filename' => $filenameWithExt,
+            'filepath' => $path,
+            'user_id' => $userId,
+        ]);
+
+        return $photo;
     }
 }
