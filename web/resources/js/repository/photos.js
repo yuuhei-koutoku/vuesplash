@@ -8,6 +8,10 @@ export default {
                     resolve(resData);
                 })
                 .catch((error) => {
+                    console.error(
+                        "Error in getPhoto:",
+                        error.response ? error.response.data : error.message
+                    );
                     reject(error);
                 });
         });
@@ -28,6 +32,10 @@ export default {
                     resolve(res);
                 })
                 .catch((error) => {
+                    console.error(
+                        "Error in getPhoto:",
+                        error.response ? error.response.data : error.message
+                    );
                     reject(error);
                 });
         });

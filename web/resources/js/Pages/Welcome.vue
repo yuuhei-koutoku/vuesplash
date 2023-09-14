@@ -2,6 +2,15 @@
 import { Head, Link } from "@inertiajs/vue3";
 import PhotoList from "./PhotoList.vue";
 import PhotoForm from "../Components/PhotoForm.vue";
+import { onMounted, computed } from "vue";
+import { useStore } from "vuex";
+
+const store = useStore();
+
+onMounted(() => {
+    store.dispatch("fetchUser");
+});
+const user = computed(() => store.state.user);
 
 defineProps({
     canLogin: {
@@ -53,6 +62,8 @@ defineProps({
                 >
             </template>
         </div>
+        <div v-if="user !== null">ログイン中</div>
+        <div v-else>ログインしていません</div>
         <div>
             <PhotoList />
             <PhotoForm />

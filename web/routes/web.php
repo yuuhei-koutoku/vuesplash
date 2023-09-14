@@ -17,6 +17,10 @@ use Inertia\Inertia;
 |
 */
 
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return Auth::user();
+});
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),

@@ -16,6 +16,9 @@ use App\Http\Controllers\PhotoController;
 */
 
 Route::get('/photos', [PhotoController::class, 'getAllImages']);
+Route::get('/photos/like', [PhotoController::class, 'getLike'])->name('photo.getLike');
+Route::put('/photos/{id}/like', [PhotoController::class, 'like'])->name('photo.like');
+Route::delete('/photos/{id}/like', [PhotoController::class, 'unlike'])->name('photo.unlike');
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

@@ -4,15 +4,58 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Photo;
+use App\Models\Like;
+use Illuminate\Support\Facades\Auth;
+use Aws\S3\S3Client;
 
 class PhotoController extends Controller
 {
+    public function getPhoto($id)
+    {
+        // DBからPhotoのデータを取得する
+        $photo = Photo::findOrFail($id);
+
+        // AWS S3 Clientのインスタンスを作成する
+        $s3Client = new S3Client([
+            'version' => 'latest',
+            'region'  => env('AWS_DEFAULT_REGION'),
+            'credentials' => [
+                'key'    => env('AWS_ACCESS_KEY_ID'),
+                'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            ],
+        ]);
+
+        $bucket = env('AWS_BUCKET');
+
+        $cmd = $s3Client->getCommand('GetObject', [
+            'Bucket' => $bucket,
+            'Key'    => $photo->filepath
+        ]);
+
+        $request = $s3Client->createPresignedRequest($cmd, '+20 minutes');
+
+        // Photoの一時的な公開URLを取得する
+        $imageUrl = (string) $request->getUri();
+
+        // PhotoのIDとURLを返す
+        return ['id' => $id, 'url' => $imageUrl];
+    }
+
     public function getAllImages()
     {
-        $photo = new Photo();
-        $images = $photo->getImageUrls();
+        // データベースから全てのPhotoのデータを取得
+        $photos = Photo::all();
 
-        return response()->json($images);
+        $results = [];
+        foreach ($photos as $photo) {
+            // 各PhotoのURLを取得
+            $photoData = $this->getPhoto($photo->id);
+
+            // PhotoのIDとURLを配列に格納
+            $results[] = $photoData;
+        }
+
+        return $results;
     }
 
     public function addImage(Request $request)
@@ -40,5 +83,37 @@ class PhotoController extends Controller
             'message' => 'Success',
             'photo' => $photo
         ]);
+    }
+
+    // 「いいね」のデータを取得
+    public function getLike()
+    {
+        $likes = Like::all();
+        return response()->json($likes);
+    }
+
+    // Photoの「いいね」を追加
+    public function like(Request $request)
+    {
+        $photo = Photo::findOrFail($request->input('image_id'));
+        $like = Like::firstOrCreate([
+            'user_id' => $request->input('user_id'),
+            'photo_id' => $photo->id,
+        ]);
+
+        return response()->json($like);
+    }
+
+    // Photoの「いいね」を削除
+    public function unlike(Request $request)
+    {
+        $photo = Photo::findOrFail($request->input('image_id'));
+        $like = Like::where('user_id', $request->input('user_id'))->where('photo_id', $photo->id)->first();
+
+        if ($like) {
+            $like->delete();
+        }
+
+        return response()->json(['message' => 'Successfully unliked']);
     }
 }
